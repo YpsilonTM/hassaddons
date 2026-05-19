@@ -169,6 +169,9 @@ Command behavior for agents:
 - Use `Start Home Assistant` task inside devcontainer for local Supervisor testing.
 - For remote hardware testing, use a separate development topic prefix before production cutover.
 
+## Changelog Maintenance
+- Always update `modqtt/CHANGELOG.md` with every user-facing or breaking change, following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format and Home Assistant add-on guidelines.
+
 ## Suggested Milestones
 Milestone 1:
 - Read Modbus input and holding registers.
