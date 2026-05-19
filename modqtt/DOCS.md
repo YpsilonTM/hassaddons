@@ -1,7 +1,7 @@
 
 # ModQTT
 
-ModQTT is a general-purpose Modbus TCP to MQTT bridge. It reads values from any Modbus TCP device (such as inverters, meters, or industrial equipment) and publishes them to MQTT topics for integration with Home Assistant or other systems.
+ModQTT is a general-purpose Modbus TCP to MQTT bridge. It reads values from any Modbus TCP device (such as inverters, meters, sensors, or industrial equipment) and publishes them to MQTT topics for integration with Home Assistant or other systems. It is not limited to any specific device or manufacturer.
 
 
 ## Features

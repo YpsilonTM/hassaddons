@@ -13,7 +13,7 @@ def test_build_discovery_payload_basic():
         host="localhost",
         port=1883,
         client_id="test-bridge",
-        topic_prefix="dev/sungrow",
+        topic_prefix="dev/device",
         availability_topic="bridge/availability",
         retain_state=True,
         json_grouped_topics=False,
@@ -39,7 +39,7 @@ def test_build_discovery_payload_basic():
     payload = build_discovery_payload(mqtt, reading)
     assert payload["name"] == "Test Sensor"
     assert payload["unique_id"] == "test-bridge_test_sensor"
-    assert payload["state_topic"] == "dev/sungrow/test_sensor/state"
+    assert payload["state_topic"] == "dev/device/test_sensor/state"
     assert payload["availability_topic"] == "bridge/availability"
     assert payload["unit_of_measurement"] == "V"
     assert payload["device_class"] == "voltage"

@@ -2,7 +2,7 @@
 
 ## Project Goal
 Build a lightweight, headless, Python-first bridge that:
-- Reads Modbus TCP registers from a Sungrow inverter.
+- Reads Modbus TCP registers from any Modbus TCP device (inverter, meter, sensor, etc).
 - Decodes values correctly (including 32-bit and signed values).
 - Publishes normalized state to MQTT topics for Home Assistant.
 - Stays safe for live-home use during development.
@@ -82,7 +82,7 @@ Do not hardcode register maps in Python. Use config.
   2. scale and offset
   3. round to decimals
 - For signed 32-bit, use proper two's-complement conversion.
-- Add unit tests for every data_type and each byte/word order combination used by Sungrow.
+- Add unit tests for every data_type and each byte/word order combination used by supported devices.
 
 ## MQTT Rules
 - Publish to state topics under a configurable prefix.
@@ -91,8 +91,8 @@ Do not hardcode register maps in Python. Use config.
 - Use JSON payload option for grouped topics, but default to one topic per sensor for clarity.
 
 Topic style:
-- dev/sungrow/<sensor_name>/state during development
-- prod/sungrow/<sensor_name>/state in production
+- dev/device/<sensor_name>/state during development
+- prod/device/<sensor_name>/state in production
 
 ## Home Assistant Safety Rules
 Default behavior must be safe for live HA:
@@ -186,7 +186,7 @@ Milestone 3:
 
 ## Definition of Done (MVP)
 MVP is done when:
-- Bridge runs locally and publishes stable values for key Sungrow sensors.
+- Bridge runs locally and publishes stable values for key device sensors.
 - All decoder tests pass.
 - No production topic collisions during development.
 - Cutover to production topic prefix requires one config change only.

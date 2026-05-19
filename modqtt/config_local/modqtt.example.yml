@@ -17,7 +17,7 @@ mqtt:
   username: ""        # Optional, leave blank if not needed
   password: ""        # Optional, leave blank if not needed
   client_id: modqtt-bridge
-  topic_prefix: prod/sungrow  # dev/sungrow for development, prod/sungrow for production
+  topic_prefix: prod/device  # dev/device for development, prod/device for production
   availability_topic: bridge/availability
   retain_state: true
   json_grouped_topics: false  # Set true to publish all readings as one JSON payload

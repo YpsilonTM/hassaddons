@@ -9,7 +9,7 @@ modbus:
 mqtt:
   host: 192.168.1.20
   port: 1883
-  topic_prefix: dev/sungrow
+  topic_prefix: dev/device
   availability_topic: bridge/availability
 readings:
   - name: grid_power

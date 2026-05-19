@@ -58,13 +58,13 @@ class MqttConfig(BaseModel):
     username: str | None = None
     password: str | None = None
     client_id: str = "modqtt-bridge"
-    topic_prefix: str = "prod/sungrow"
+    topic_prefix: str = "prod/device"
     availability_topic: str = "bridge/availability"
     retain_state: bool = True
     json_grouped_topics: bool = False
     discovery_enabled: bool = False
-    discovery_device_name: str = "Sungrow Inverter"
-    discovery_device_manufacturer: str = "Sungrow"
+    discovery_device_name: str = "Generic Device"
+    discovery_device_manufacturer: str = "Generic"
     discovery_device_model: str = "ModQTT Bridge"
 
 

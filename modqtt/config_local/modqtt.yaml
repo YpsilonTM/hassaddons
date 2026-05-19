@@ -13,7 +13,7 @@ mqtt:
   username: "homeassistant"
   password: "mqtt"
   client_id: modqtt-bridge
-  topic_prefix: prod/sungrow
+  topic_prefix: prod/device
   availability_topic: bridge/availability
   retain_state: true
   json_grouped_topics: false

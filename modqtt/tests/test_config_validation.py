@@ -23,7 +23,7 @@ modbus:
   host: 192.168.1.10
 mqtt:
   host: 192.168.1.20
-  topic_prefix: dev/sungrow
+  topic_prefix: dev/device
 readings:
   - name: pv_power
     label: PV Power
@@ -46,7 +46,7 @@ readings:
 
     assert cfg.profile == "dev"
     assert cfg.modbus.port == 502
-    assert cfg.mqtt.topic_prefix == "dev/sungrow"
+    assert cfg.mqtt.topic_prefix == "dev/device"
     assert len(cfg.readings) == 1
 
 
@@ -60,7 +60,7 @@ modbus:
   host: inverter.local
 mqtt:
   host: broker.local
-  topic_prefix: prod/sungrow
+  topic_prefix: prod/device
 readings:
   - name: test
     topic_suffix: test
@@ -88,7 +88,7 @@ modbus:
   host: inverter.local
 mqtt:
   host: broker.local
-  topic_prefix: dev/sungrow
+  topic_prefix: dev/device
 readings:
   - name: test
     topic_suffix: test
@@ -100,12 +100,12 @@ readings:
     )
 
     monkeypatch.setenv("MODQTT_MODBUS_HOST", "should-not-be-used")
-    monkeypatch.setenv("MODQTT_TOPIC_PREFIX", "prod/sungrow")
+    monkeypatch.setenv("MODQTT_TOPIC_PREFIX", "prod/device")
 
     cfg = load_config(config_path)
 
     assert cfg.modbus.host == "inverter.local"
-    assert cfg.mqtt.topic_prefix == "dev/sungrow"
+    assert cfg.mqtt.topic_prefix == "dev/device"
 
 
 def test_load_inline_write_parameters(tmp_path: Path) -> None:
@@ -118,7 +118,7 @@ modbus:
   host: inverter.local
 mqtt:
   host: broker.local
-  topic_prefix: prod/sungrow
+  topic_prefix: prod/device
 readings:
   - name: grid_power
     topic_suffix: grid_power

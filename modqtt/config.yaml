@@ -26,13 +26,13 @@ options:
   mqtt_username: ""
   mqtt_password: ""
   mqtt_client_id: modqtt-addon
-  topic_prefix: prod/sungrow
+  topic_prefix: prod/device
   availability_topic: bridge/availability
   retain_state: true
   json_grouped_topics: false
   discovery_enabled: false
-  discovery_device_name: Sungrow Inverter
-  discovery_device_manufacturer: Sungrow
+  discovery_device_name: Generic Device
+  discovery_device_manufacturer: Generic
   discovery_device_model: ModQTT Bridge
   readings: []
   write_parameters: []
