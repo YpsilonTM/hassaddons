@@ -1,0 +1,79 @@
+# Example ModQTT configuration for Sungrow inverter bridge
+# Copy this file to modqtt.yaml and edit values for your environment
+
+profile: dev  # dev or prod
+read_only_mode: true  # Always true for safety unless you know what you are doing
+allow_writes: false  # Only set true if you want to enable Modbus writes
+
+modbus:
+  host: 192.168.1.10  # IP address of your Sungrow inverter
+  port: 502           # Modbus TCP port (default 502)
+  unit_id: 1          # Modbus unit ID (default 1)
+  timeout_seconds: 3.0
+  poll_interval_seconds: 5.0  # How often to poll (seconds)
+
+mqtt:
+  host: 192.168.1.20  # MQTT broker address
+  port: 1883          # MQTT broker port
+  username: ""        # Optional, leave blank if not needed
+  password: ""        # Optional, leave blank if not needed
+  client_id: modqtt-bridge
+  topic_prefix: dev/sungrow  # dev/sungrow for development, prod/sungrow for production
+  availability_topic: bridge/availability
+  retain_state: true
+  json_grouped_topics: false  # Set true to publish all readings as one JSON payload
+  discovery_enabled: false    # Enable Home Assistant discovery (default false)
+
+readings:
+  - name: grid_power
+    label: Grid Power
+    icon: mdi:transmission-tower
+    entityCategory: diagnostic
+    topic_suffix: grid_power
+    register_type: input      # input or holding
+    address: 13023           # Modbus register address
+    length_words: 2          # 1 for 16-bit, 2 for 32-bit
+    data_type: s32           # u16, s16, u32, s32, f32
+    scale: 0.1
+    offset: 0
+    decimals: 1
+    byte_order: big          # big or little
+    word_order: little       # big or little
+    unit: W
+    device_class: power
+    state_class: measurement
+    writable: false
+  # Add more readings as needed
+
+# Optional write parameters (holding registers, RW)
+# Safety:
+# - Keep read_only_mode: true and allow_writes: false unless you intentionally test writes
+# - Set read_only_mode: false and allow_writes: true to enable write mode in app
+write_parameters:
+  - name: ems_mode_selection
+    label: EMS Mode
+    icon: mdi:home-lightning-bolt
+    entityCategory: config
+    register_type: holding
+    address: 13050
+    length_words: 1
+    data_type: u16
+    scale: 1.0
+    offset: 0
+    decimals: 0
+    byte_order: big
+    word_order: big
+    min_value: 0
+    max_value: 4
+  - name: feed_in_limitation_ratio
+    register_type: holding
+    address: 13088
+    length_words: 1
+    data_type: u16
+    scale: 0.1
+    offset: 0
+    decimals: 1
+    byte_order: big
+    word_order: big
+    min_value: 0
+    max_value: 100.0

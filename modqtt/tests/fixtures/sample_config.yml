@@ -1,0 +1,26 @@
+profile: dev
+read_only_mode: true
+allow_writes: false
+modbus:
+  host: 192.168.1.10
+  port: 502
+  unit_id: 1
+  timeout_seconds: 3.0
+  poll_interval_seconds: 5.0
+mqtt:
+  host: 192.168.1.20
+  port: 1883
+  topic_prefix: dev/sungrow
+  availability_topic: bridge/availability
+readings:
+  - name: grid_power
+    topic_suffix: grid_power
+    register_type: input
+    address: 13023
+    length_words: 2
+    data_type: s32
+    scale: 0.1
+    offset: 0
+    decimals: 1
+    byte_order: big
+    word_order: little
