@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "modqtt"
 version = "0.1.0"
-description = "Modbus TCP to MQTT bridge for Sungrow inverters"
+description = "Modbus TCP to MQTT bridge"
 requires-python = ">=3.12"
 dependencies = [
   "pydantic>=2.7",
