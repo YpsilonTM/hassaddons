@@ -137,7 +137,11 @@ Require all checks to pass:
 If environment variables are used for non-add-on local development, keep names under the `MODQTT_` prefix.
 
 ## Copilot Behavior for This Project
+This repository is an add-on collection and may contain multiple Home Assistant add-ons over time.
+
 When generating code for this repository:
+- Treat `modqtt/` as one add-on package in a multi-add-on repo, not the only long-term product.
+- Keep add-on-specific logic, docs, and packaging files scoped to each add-on directory.
 - Prioritize correctness of decoding over adding features.
 - Add tests with every decoding change.
 - Keep functions small and typed.
