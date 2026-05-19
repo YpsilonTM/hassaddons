@@ -172,6 +172,9 @@ Command behavior for agents:
 ## Changelog Maintenance
 - Always update `modqtt/CHANGELOG.md` with every user-facing or breaking change, following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format and Home Assistant add-on guidelines.
 
+## Versioning
+- For every release or hotfix, bump the version in both `modqtt/pyproject.toml` and `modqtt/config.yaml` in the same change.
+
 ## Suggested Milestones
 Milestone 1:
 - Read Modbus input and holding registers.
