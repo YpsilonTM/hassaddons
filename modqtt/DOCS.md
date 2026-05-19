@@ -24,6 +24,52 @@ Set at least these options:
 - `mqtt_host`
 - `readings` (list of register definitions)
 
+You can also use a separate YAML file for bulk register definitions.
+
+- Set add-on option `registers_file` to a path (for example `/config/modqtt-registers.yml`).
+- The file can contain `readings` and optional `write_parameters`.
+- When `registers_file` is set, values from that file are used for these sections.
+
+Example file structure (`/config/modqtt-registers.yml`):
+
+```yaml
+readings:
+   - name: inverter_temperature
+      label: Inverter temperature
+      topic_suffix: inverter_temperature
+      register_type: input
+      address: 5007
+      length_words: 1
+      data_type: s16
+      scale: 0.1
+      offset: 0
+      decimals: 1
+      byte_order: big
+      word_order: big
+      unit: C
+      device_class: temperature
+      state_class: measurement
+      entityCategory: diagnostic
+
+write_parameters:
+   - name: battery_max_soc
+      label: Battery max SoC
+      register_type: holding
+      address: 13057
+      length_words: 1
+      data_type: u16
+      scale: 0.1
+      offset: 0
+      decimals: 1
+      byte_order: big
+      word_order: big
+      entityCategory: config
+      min_value: 50.0
+      max_value: 100.0
+```
+
+You can find a larger starter template in `registers.example.yml` in this add-on folder.
+
 Default profile is production-safe topic routing:
 
 - `profile: prod`

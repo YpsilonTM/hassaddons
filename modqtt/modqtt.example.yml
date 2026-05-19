@@ -4,6 +4,7 @@
 profile: prod  # dev or prod
 read_only_mode: true  # Always true for safety unless you know what you are doing
 allow_writes: false  # Only set true if you want to enable Modbus writes
+registers_file: ""   # Optional: path to YAML file containing readings/write_parameters
 
 modbus:
   host: 192.168.1.10  # IP address of your Sungrow inverter

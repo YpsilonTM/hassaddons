@@ -1,0 +1,87 @@
+# Example external register file for use with registers_file
+# In Home Assistant add-on options set:
+# registers_file: /config/modqtt-registers.yml
+# Then copy this content into /config/modqtt-registers.yml and adjust.
+
+readings:
+  - name: inverter_temperature
+    label: Inverter temperature
+    entityCategory: diagnostic
+    topic_suffix: inverter_temperature
+    register_type: input
+    address: 5007
+    length_words: 1
+    data_type: s16
+    scale: 0.1
+    offset: 0
+    decimals: 1
+    byte_order: big
+    word_order: big
+    unit: C
+    device_class: temperature
+    state_class: measurement
+
+  - name: mppt1_voltage
+    label: MPPT1 voltage
+    entityCategory: diagnostic
+    topic_suffix: mppt1_voltage
+    register_type: input
+    address: 5010
+    length_words: 1
+    data_type: u16
+    scale: 0.1
+    offset: 0
+    decimals: 1
+    byte_order: big
+    word_order: big
+    unit: V
+    device_class: voltage
+    state_class: measurement
+
+  - name: total_active_power
+    label: Total active power
+    entityCategory: diagnostic
+    topic_suffix: total_active_power
+    register_type: input
+    address: 13033
+    length_words: 2
+    data_type: s32
+    scale: 1.0
+    offset: 0
+    decimals: 0
+    byte_order: big
+    word_order: little
+    unit: W
+    device_class: power
+    state_class: measurement
+
+write_parameters:
+  - name: battery_max_soc
+    label: Battery max SoC
+    entityCategory: config
+    register_type: holding
+    address: 13057
+    length_words: 1
+    data_type: u16
+    scale: 0.1
+    offset: 0
+    decimals: 1
+    byte_order: big
+    word_order: big
+    min_value: 50.0
+    max_value: 100.0
+
+  - name: battery_min_soc
+    label: Battery min SoC
+    entityCategory: config
+    register_type: holding
+    address: 13058
+    length_words: 1
+    data_type: u16
+    scale: 0.1
+    offset: 0
+    decimals: 1
+    byte_order: big
+    word_order: big
+    min_value: 0.0
+    max_value: 50.0

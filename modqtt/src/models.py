@@ -69,6 +69,7 @@ class AppConfig(BaseModel):
     profile: Profile = "prod"
     read_only_mode: bool = True
     allow_writes: bool = False
+    registers_file: str | None = None
     modbus: ModbusConfig
     mqtt: MqttConfig
     readings: list[ReadingDefinition]

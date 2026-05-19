@@ -18,6 +18,7 @@ options:
   profile: prod
   read_only_mode: true
   allow_writes: false
+  registers_file: ""
   modbus_host: 192.168.50.11
   modbus_port: 502
   modbus_unit_id: 1
@@ -39,6 +40,7 @@ schema:
   profile: list(dev|prod)
   read_only_mode: bool
   allow_writes: bool
+  registers_file: str?
   modbus_host: str
   modbus_port: int(1,65535)
   modbus_unit_id: int(0,255)
