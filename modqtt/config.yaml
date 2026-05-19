@@ -14,7 +14,6 @@ init: false
 map:
   - config:rw
 options:
-  profile: prod
   allow_writes: false
   modbus_host: 192.168.50.11
   modbus_port: 502
@@ -37,7 +36,6 @@ options:
   readings: []
   write_parameters: []
 schema:
-  profile: list(dev|prod)
   allow_writes: bool
   modbus_host: str
   modbus_port: int(1,65535)

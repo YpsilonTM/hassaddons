@@ -1,7 +1,6 @@
 # Example ModQTT configuration for a Modbus TCP device
 # Copy this file to config_local/modqtt.yaml and edit values for your environment
 
-profile: prod  # dev or prod
 allow_writes: false  # Set true only if you intentionally enable Modbus writes
 
 modbus:

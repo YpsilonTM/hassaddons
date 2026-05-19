@@ -17,7 +17,6 @@ def test_load_minimal_valid_config(tmp_path: Path) -> None:
     config_path = _write(
         tmp_path / "config.yml",
         """
-profile: dev
 allow_writes: false
 modbus:
   host: 192.168.1.10
@@ -44,35 +43,11 @@ readings:
 
     cfg = load_config(config_path)
 
-    assert cfg.profile == "dev"
     assert cfg.modbus.port == 502
     assert cfg.mqtt.topic_prefix == "dev/device"
     assert len(cfg.readings) == 1
 
 
-def test_dev_profile_rejects_prod_prefix(tmp_path: Path) -> None:
-    config_path = _write(
-        tmp_path / "bad.yml",
-        """
-profile: dev
-allow_writes: false
-modbus:
-  host: inverter.local
-mqtt:
-  host: broker.local
-  topic_prefix: prod/device
-readings:
-  - name: test
-    topic_suffix: test
-    register_type: input
-    address: 1
-    length_words: 1
-    data_type: u16
-""".strip(),
-    )
-
-    with pytest.raises(ValidationError):
-        load_config(config_path)
 
 
 def test_environment_variables_do_not_override_yaml(

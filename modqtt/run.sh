@@ -15,7 +15,6 @@ with options_path.open('r', encoding='utf-8') as handle:
     options = json.load(handle)
 
 config = {
-    'profile': options.get('profile', 'prod'),
     'allow_writes': options.get('allow_writes', False),
     'modbus': {
         'host': options.get('modbus_host', '127.0.0.1'),

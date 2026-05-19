@@ -24,7 +24,6 @@ ModQTT is a general-purpose Modbus TCP to MQTT bridge. It reads values from any 
 
 Switch the add-on options editor to YAML mode. The add-on configuration is a single YAML document with these top-level sections:
 
-- `profile`: `dev` or `prod`
 - `allow_writes`: keep `false` unless you intentionally enable writes
 - `modbus_host`, `modbus_port`, `modbus_unit_id`, `modbus_timeout_seconds`, `poll_interval_seconds`
 - `mqtt_host`, `mqtt_port`, `mqtt_username`, `mqtt_password`, `mqtt_client_id`
@@ -35,7 +34,6 @@ Switch the add-on options editor to YAML mode. The add-on configuration is a sin
 Minimal example:
 
 ```yaml
-profile: prod
 allow_writes: false
 modbus_host: 192.168.1.10
 modbus_port: 502

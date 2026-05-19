@@ -1,5 +1,4 @@
 # ModQTT configuration
-profile: prod
 allow_writes: false
 modbus:
   host: 192.168.50.35

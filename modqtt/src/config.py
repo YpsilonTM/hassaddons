@@ -15,4 +15,6 @@ def load_config(path: str | Path) -> AppConfig:
     if not isinstance(parsed, dict):
         raise ValueError("Configuration file must contain a top-level mapping")
 
+    # Remove legacy 'profile' if present (for migration safety)
+    parsed.pop('profile', None)
     return AppConfig.model_validate(parsed)

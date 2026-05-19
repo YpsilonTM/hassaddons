@@ -69,19 +69,11 @@ class MqttConfig(BaseModel):
 
 
 class AppConfig(BaseModel):
-    profile: Profile = "prod"
     allow_writes: bool = False
     modbus: ModbusConfig
     mqtt: MqttConfig
     readings: list[ReadingDefinition]
     write_parameters: list[WriteParameterDefinition] = Field(default_factory=list)
-
-    @model_validator(mode="after")
-    def _validate_safety(self) -> AppConfig:
-        if self.profile == "dev" and self.mqtt.topic_prefix.startswith("prod/"):
-            msg = "dev profile must not publish under prod/ prefix"
-            raise ValueError(msg)
-        return self
 
 
 class WriteParameterDefinition(BaseModel):
