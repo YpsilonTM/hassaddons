@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.1] - 2026-05-20
+### Fixed
+- Removed reference to deleted `profile` field in app.py startup log (fixes startup crash after profile removal).
+
 All notable changes to this Home Assistant add-on will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
