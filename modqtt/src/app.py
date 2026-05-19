@@ -91,7 +91,7 @@ def main() -> int:
         from src.publisher import publish_discovery
         publish_discovery(config.mqtt, mqtt, config.readings)
 
-    logger.info("bridge_started profile=%s readings=%s", config.profile, len(config.readings))
+    logger.info("bridge_started readings=%s", len(config.readings))
 
     try:
         while True:
