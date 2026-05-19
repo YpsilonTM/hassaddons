@@ -75,6 +75,7 @@ def main() -> int:
         unit_id=config.modbus.unit_id,
         timeout_seconds=config.modbus.timeout_seconds,
     )
+
     mqtt = MqttPublisher(
         host=config.mqtt.host,
         port=config.mqtt.port,
@@ -86,6 +87,11 @@ def main() -> int:
     modbus.connect_with_backoff()
     mqtt.connect_with_backoff()
     mqtt.publish_availability(config.mqtt.availability_topic, online=True)
+
+    # Publish Home Assistant discovery if enabled
+    if getattr(config.mqtt, "discovery_enabled", False):
+        from src.publisher import publish_discovery
+        publish_discovery(config.mqtt, mqtt, config.readings)
 
     logger.info("bridge_started profile=%s readings=%s", config.profile, len(config.readings))
 

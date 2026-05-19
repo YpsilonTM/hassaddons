@@ -1,3 +1,45 @@
+# Test Home Assistant discovery payload generation
+import pytest
+from src.models import MqttConfig, ReadingDefinition
+from src.publisher import build_discovery_payload
+
+def test_build_discovery_payload_basic():
+    mqtt = MqttConfig(
+        host="localhost",
+        port=1883,
+        client_id="test-bridge",
+        topic_prefix="dev/sungrow",
+        availability_topic="bridge/availability",
+        retain_state=True,
+        json_grouped_topics=False,
+        discovery_enabled=True,
+    )
+    reading = ReadingDefinition(
+        name="test_sensor",
+        label="Test Sensor",
+        topic_suffix="test_sensor",
+        register_type="input",
+        address=1,
+        length_words=1,
+        data_type="u16",
+        scale=1.0,
+        offset=0.0,
+        decimals=0,
+        byte_order="big",
+        word_order="big",
+        unit="V",
+        device_class="voltage",
+        state_class="measurement",
+    )
+    payload = build_discovery_payload(mqtt, reading)
+    assert payload["name"] == "Test Sensor"
+    assert payload["unique_id"] == "test-bridge_test_sensor"
+    assert payload["state_topic"] == "dev/sungrow/test_sensor/state"
+    assert payload["availability_topic"] == "bridge/availability"
+    assert payload["unit_of_measurement"] == "V"
+    assert payload["device_class"] == "voltage"
+    assert payload["state_class"] == "measurement"
+    assert payload["device"]["identifiers"] == ["test-bridge"]
 from __future__ import annotations
 
 import math
