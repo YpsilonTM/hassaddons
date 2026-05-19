@@ -58,7 +58,7 @@ class MqttConfig(BaseModel):
     username: str | None = None
     password: str | None = None
     client_id: str = "modqtt-bridge"
-    topic_prefix: str = "dev/sungrow"
+    topic_prefix: str = "prod/sungrow"
     availability_topic: str = "bridge/availability"
     retain_state: bool = True
     json_grouped_topics: bool = False
@@ -66,7 +66,7 @@ class MqttConfig(BaseModel):
 
 
 class AppConfig(BaseModel):
-    profile: Profile = "dev"
+    profile: Profile = "prod"
     read_only_mode: bool = True
     allow_writes: bool = False
     modbus: ModbusConfig

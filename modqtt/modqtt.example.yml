@@ -1,7 +1,7 @@
 # Example ModQTT configuration for Sungrow inverter bridge
 # Copy this file to modqtt.yaml and edit values for your environment
 
-profile: dev  # dev or prod
+profile: prod  # dev or prod
 read_only_mode: true  # Always true for safety unless you know what you are doing
 allow_writes: false  # Only set true if you want to enable Modbus writes
 
@@ -18,7 +18,7 @@ mqtt:
   username: ""        # Optional, leave blank if not needed
   password: ""        # Optional, leave blank if not needed
   client_id: modqtt-bridge
-  topic_prefix: dev/sungrow  # dev/sungrow for development, prod/sungrow for production
+  topic_prefix: prod/sungrow  # dev/sungrow for development, prod/sungrow for production
   availability_topic: bridge/availability
   retain_state: true
   json_grouped_topics: false  # Set true to publish all readings as one JSON payload

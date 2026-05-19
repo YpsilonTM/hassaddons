@@ -15,10 +15,10 @@ init: false
 map:
   - config:rw
 options:
-  profile: dev
+  profile: prod
   read_only_mode: true
   allow_writes: false
-  modbus_host: 192.168.1.10
+  modbus_host: 192.168.50.11
   modbus_port: 502
   modbus_unit_id: 1
   modbus_timeout_seconds: 3.0
@@ -28,7 +28,7 @@ options:
   mqtt_username: ""
   mqtt_password: ""
   mqtt_client_id: modqtt-addon
-  topic_prefix: dev/sungrow
+  topic_prefix: prod/sungrow
   availability_topic: bridge/availability
   retain_state: true
   json_grouped_topics: false

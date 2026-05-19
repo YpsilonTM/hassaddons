@@ -15,7 +15,7 @@ with options_path.open('r', encoding='utf-8') as handle:
     options = json.load(handle)
 
 config = {
-    'profile': options.get('profile', 'dev'),
+    'profile': options.get('profile', 'prod'),
     'read_only_mode': options.get('read_only_mode', True),
     'allow_writes': options.get('allow_writes', False),
     'modbus': {
@@ -31,7 +31,7 @@ config = {
         'username': options.get('mqtt_username') or None,
         'password': options.get('mqtt_password') or None,
         'client_id': options.get('mqtt_client_id', 'modqtt-addon'),
-        'topic_prefix': options.get('topic_prefix', 'dev/sungrow'),
+        'topic_prefix': options.get('topic_prefix', 'prod/sungrow'),
         'availability_topic': options.get('availability_topic', 'bridge/availability'),
         'retain_state': options.get('retain_state', True),
         'json_grouped_topics': options.get('json_grouped_topics', False),
