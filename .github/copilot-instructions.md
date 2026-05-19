@@ -10,9 +10,9 @@ Build a lightweight, headless, Python-first bridge that:
 ## Scope
 In scope:
 - Python bridge service.
-- YAML or JSON config for registers and decoding.
+- YAML config for registers and decoding.
 - MQTT publishing and optional Home Assistant discovery payloads.
-- Docker packaging for easy deployment.
+- Docker packaging for Home Assistant add-on deployment.
 
 Out of scope (for first milestone):
 - Web GUI.
@@ -29,13 +29,16 @@ Out of scope (for first milestone):
 - Testing: pytest
 
 ## Current Repository State
-- This repository is currently specification-first.
-- If requested to implement MVP, scaffold the required structure from "Architecture Requirements" before adding features.
-- Do not assume existing commands/config files are present until created.
+- The repository is implementation-first and actively used with real hardware.
+- The Home Assistant add-on lives in `modqtt/`.
+- The Python service code lives under `modqtt/src/` with tests in `modqtt/tests/`.
+- Local runtime config is `modqtt/modqtt.yaml`.
+- Add-on metadata file is `modqtt/config.yaml` (do not use this filename for bridge runtime config).
+- A GitHub Actions workflow exists at `.github/workflows/build-and-push-addon.yml` for build and GHCR push.
 
 ## Architecture Requirements
 Use this structure:
-- src/
+- modqtt/src/
   - app.py (entrypoint)
   - config.py (schema validation)
   - modbus_client.py (polling and read batching)
@@ -43,7 +46,7 @@ Use this structure:
   - mqtt_client.py (publish and availability)
   - publisher.py (topic mapping and payload shaping)
   - models.py (typed config and reading models)
-- tests/
+- modqtt/tests/
   - test_decoder.py
   - test_config_validation.py
   - fixtures/
@@ -128,18 +131,10 @@ Require all checks to pass:
 
 ## Secrets Handling
 - Do not hardcode credentials.
-- Read broker credentials from environment variables or external secrets file.
+- For Home Assistant add-on usage, read credentials from add-on options (`/data/options.json`) via `run.sh` generated runtime YAML.
 - Keep example config scrubbed.
 
-Use these environment variable names by default:
-- MODQTT_MODBUS_HOST
-- MODQTT_MODBUS_PORT
-- MODQTT_MQTT_HOST
-- MODQTT_MQTT_PORT
-- MODQTT_MQTT_USERNAME
-- MODQTT_MQTT_PASSWORD
-- MODQTT_MQTT_CLIENT_ID
-- MODQTT_TOPIC_PREFIX
+If environment variables are used for non-add-on local development, keep names under the `MODQTT_` prefix.
 
 ## Copilot Behavior for This Project
 When generating code for this repository:
@@ -161,11 +156,18 @@ Default implementation order (unless user requests otherwise):
 
 Command behavior for agents:
 - If pyproject.toml exists, use it as the source of truth for tooling commands.
-- If commands are not defined yet, prefer these once scaffolding exists:
+- Run project commands from `modqtt/`.
+- Prefer these commands:
   - python -m pytest
   - python -m ruff check .
   - python -m black --check .
 - Run tests after decode or config changes before concluding work.
+
+## Home Assistant Add-on Workflow
+- Keep add-on packaging files in `modqtt/` (`config.yaml`, `Dockerfile`, `run.sh`, `DOCS.md`).
+- Keep local app testing support in `.devcontainer/devcontainer.json` and `.vscode/tasks.json`.
+- Use `Start Home Assistant` task inside devcontainer for local Supervisor testing.
+- For remote hardware testing, use a separate development topic prefix before production cutover.
 
 ## Suggested Milestones
 Milestone 1:
