@@ -2,7 +2,7 @@ name: ModQTT
 slug: modqtt
 description: Modbus TCP to MQTT bridge for Sungrow inverters
 version: 0.1.0
-url: https://github.com/your-org/modqtt
+url: https://github.com/YpsilonTM/ModQTT
 arch:
   - aarch64
   - amd64
