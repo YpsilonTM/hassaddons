@@ -16,36 +16,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   units.
 - Runtime authorization gate for `Authorize` handling with MQTT toggle command
   `command/toggle_authorize` and state publish on `authorize/state`.
-- `set_power_watts` MQTT command to convert requested watts to per-phase current
-  using fixed nominal 230V, clamped to 6-16A, and apply through OCPP smart
-  charging (`SetChargingProfile`).
-- `usable_phases` configuration option (1|2|3, default 2) for future car upgrades,
-  wired through add-on options, runtime YAML generation, and bridge config.
-- `set_power_watts` support for optional per-command overrides:
-  `phases` and charging profile `purpose`.
+- `usable_phases` configuration option (1|2|3, default 2) for future car upgrades.
 
 ### Changed
-- `set_power_watts` now prefers `TxProfile` while a transaction is active and
-  otherwise falls back to `ChargePointMaxProfile`.
-- `ChargePointMaxProfile` requests now use connector `0`, and `TxProfile`
-  requests include the active `transactionId` when available.
-- Active transaction IDs are now recovered from incoming `MeterValues`
-  payloads, so Smart Charging requests can keep using `TxProfile` after
-  bridge restarts.
-- `set_power_watts` timeout errors now include explicit diagnostics and the
-  exact attempted OCPP request payload in MQTT command results.
-- Documentation updated with WS/WSS connection variants, CPID guidance, and
-  smart charging notes from the SIGEN technical PDF.
-
 - `Authorize` response is now configurable at runtime (`Accepted`/`Blocked`) while
   keeping OCPP connection online.
-- Bridge command subscriptions include `command/set_power_watts`.
+- Documentation clarified that OCPP `SetChargingProfile` is not supported on SIGEN
+  EVAC 11 firmware (advertised but not implemented). The `set_power_watts` command
+  is provided for code compatibility and future hardware support but will timeout
+  on current firmware versions.
+- MQTT topic structure simplified in documentation (removed incorrect `{cp_id}`
+  patterns).
 
 ### Tests
 - Added coverage for authorization gate enabled/disabled behavior and runtime
   toggling.
-- Added coverage for watts-to-current conversion at 230V, clamp boundaries, and
-  phase override behavior.
 
 ## [0.1.0] - 2025-07-15
 
