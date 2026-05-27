@@ -47,6 +47,8 @@ class OcppBridge:
         self.last_active_phases: int | None = None
         self.usable_phases = max(1, min(3, int(config.usable_phases)))
         self.nominal_voltage_v = 230.0
+        self._derived_energy_wh = 0.0
+        self._last_meter_timestamp: datetime | None = None
 
         try:
             self.mq = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=config.mqtt.client_id)  # paho-mqtt >= 2.0
@@ -61,6 +63,15 @@ class OcppBridge:
 
     def _prefix(self, *parts: str) -> str:
         return "/".join([self.config.mqtt.topic_prefix, *parts])
+
+    def _parse_ocpp_timestamp(self, value: Any) -> datetime | None:
+        if not isinstance(value, str) or not value:
+            return None
+        normalized = value.replace("Z", "+00:00")
+        try:
+            return datetime.fromisoformat(normalized)
+        except ValueError:
+            return None
 
     def _on_mqtt_connect(self, client: mqtt.Client, _ud: Any, _flags: Any, rc: Any, *_args: Any) -> None:
         # rc is int (v1 API) or ReasonCode (v2 API); treat non-zero / non-Success as failure
@@ -607,9 +618,15 @@ class OcppBridge:
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "transaction_id": payload.get("transactionId"),
         }
+        total_current_a: float | None = None
+        reported_power_w: float | None = None
+        reported_energy_wh: float | None = None
         phase_currents: dict[str, float] = {}
+        phase_voltages: dict[str, float] = {}
+        meter_timestamp: datetime | None = None
 
         for meter in payload.get("meterValue", []):
+            meter_timestamp = self._parse_ocpp_timestamp(meter.get("timestamp")) or meter_timestamp
             for sv in meter.get("sampledValue", []):
                 measurand = sv.get("measurand", "Energy.Active.Import.Register")
                 unit = sv.get("unit", "")
@@ -623,33 +640,83 @@ class OcppBridge:
 
                 if measurand == "Power.Active.Import":
                     w = value * 1000 if unit == "kW" else value
-                    metrics["power_w"] = w
-                    self.publish_event("power_w", {"value": w})
+                    if w > 0.1:
+                        reported_power_w = w
 
                 elif measurand == "Current.Import":
-                    metrics["current_a"] = value
-                    self.publish_event("current_a", {"value": value})
                     phase = sv.get("phase")
                     if phase in {"L1", "L2", "L3"}:
                         phase_currents[phase] = value
+                    elif value > 0.1:
+                        total_current_a = value
 
                 elif measurand == "Current.Offered":
                     metrics["current_offered_a"] = value
 
                 elif measurand == "Energy.Active.Import.Register":
                     wh = value * 1000 if unit == "kWh" else value
-                    metrics["total_energy_wh"] = wh
-                    self.publish_event("total_energy_wh", {"value": wh})
-                    self.publish_event("lifetime_energy_kwh", {"value": wh / 1000.0})
+                    if wh > 0.1:
+                        reported_energy_wh = wh
 
                 elif measurand == "Voltage":
-                    metrics["voltage_v"] = value
-                    self.publish_event("voltage_v", {"value": value})
+                    phase = sv.get("phase")
+                    if phase in {"L1", "L2", "L3"}:
+                        phase_voltages[phase] = value
+                    else:
+                        metrics["voltage_v"] = value
+                        self.publish_event("voltage_v", {"value": value})
 
         active_phases = sum(1 for val in phase_currents.values() if val > 0.1)
         if active_phases > 0:
             self.last_active_phases = active_phases
             metrics["active_phases"] = active_phases
+
+        if total_current_a is not None:
+            current_a = total_current_a
+        elif phase_currents:
+            current_a = max(phase_currents.values())
+        else:
+            current_a = None
+
+        if current_a is not None:
+            metrics["current_a"] = current_a
+            self.publish_event("current_a", {"value": current_a})
+
+        derived_voltage_v: float | None = None
+        if phase_voltages:
+            derived_voltage_v = sum(phase_voltages.values()) / len(phase_voltages)
+
+        if derived_voltage_v is not None:
+            metrics["voltage_v"] = derived_voltage_v
+            self.publish_event("voltage_v", {"value": derived_voltage_v})
+
+        derived_power_w: float | None = reported_power_w
+        if derived_power_w is None and phase_currents and phase_voltages:
+            derived_power_w = sum(
+                phase_currents[phase] * phase_voltages[phase]
+                for phase in phase_currents
+                if phase in phase_voltages and phase_currents[phase] > 0.1
+            )
+
+        if derived_power_w is not None:
+            metrics["power_w"] = derived_power_w
+            self.publish_event("power_w", {"value": derived_power_w})
+
+        if reported_energy_wh is not None:
+            self._derived_energy_wh = max(self._derived_energy_wh, reported_energy_wh)
+
+        if meter_timestamp is not None and self._last_meter_timestamp is not None and derived_power_w is not None:
+            elapsed_seconds = (meter_timestamp - self._last_meter_timestamp).total_seconds()
+            if elapsed_seconds > 0:
+                self._derived_energy_wh += derived_power_w * (elapsed_seconds / 3600.0)
+
+        if meter_timestamp is not None:
+            self._last_meter_timestamp = meter_timestamp
+
+        if self._derived_energy_wh > 0:
+            metrics["total_energy_wh"] = self._derived_energy_wh
+            self.publish_event("total_energy_wh", {"value": self._derived_energy_wh})
+            self.publish_event("lifetime_energy_kwh", {"value": self._derived_energy_wh / 1000.0})
 
         self.publish_event("metrics", metrics)
 

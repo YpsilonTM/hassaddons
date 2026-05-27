@@ -87,6 +87,104 @@ async def test_meter_values_published():
 
 
 @pytest.mark.asyncio
+async def test_meter_values_current_uses_nonzero_phase_when_total_is_zero():
+    bridge = make_bridge()
+    ws = MagicMock()
+
+    async def fake_send(data):
+        pass
+
+    ws.send = fake_send
+
+    cp = ChargePoint("TEST01")
+    cp.websocket = ws
+    bridge.charge_points["TEST01"] = cp
+
+    published: dict[str, object] = {}
+
+    def fake_publish(topic, payload, retain=True):
+        published[topic] = payload
+
+    bridge.publish = fake_publish
+
+    payload = {
+        "connectorId": 1,
+        "transactionId": 42,
+        "meterValue": [{
+            "timestamp": "2025-01-01T00:00:00Z",
+            "sampledValue": [
+                {"measurand": "Current.Import", "value": "5.92", "unit": "A", "phase": "L1"},
+                {"measurand": "Current.Import", "value": "6.03", "unit": "A", "phase": "L2"},
+                {"measurand": "Current.Import", "value": "0.0", "unit": "A"},
+            ],
+        }],
+    }
+
+    meter_frame = json.dumps([CALL, "msg2", "MeterValues", payload])
+    await bridge._handle_frame(cp, meter_frame)
+
+    assert published["ocpp/current_a"] == {"charger_id": "CHARGER01", "value": 6.03}
+
+
+@pytest.mark.asyncio
+async def test_meter_values_derives_power_voltage_and_energy_from_phase_samples():
+    bridge = make_bridge()
+    ws = MagicMock()
+
+    async def fake_send(data):
+        pass
+
+    ws.send = fake_send
+
+    cp = ChargePoint("TEST01")
+    cp.websocket = ws
+    bridge.charge_points["TEST01"] = cp
+
+    published: dict[str, object] = {}
+
+    def fake_publish(topic, payload, retain=True):
+        published[topic] = payload
+
+    bridge.publish = fake_publish
+
+    first_payload = {
+        "connectorId": 1,
+        "transactionId": 42,
+        "meterValue": [{
+            "timestamp": "2026-05-27T13:41:11Z",
+            "sampledValue": [
+                {"value": "5.98", "measurand": "Current.Import", "unit": "A", "phase": "L1"},
+                {"value": "6.03", "measurand": "Current.Import", "unit": "A", "phase": "L2"},
+                {"value": "0.00", "measurand": "Current.Import", "unit": "A", "phase": "L3"},
+                {"value": "243.72", "measurand": "Voltage", "unit": "V", "phase": "L1"},
+                {"value": "238.04", "measurand": "Voltage", "unit": "V", "phase": "L2"},
+                {"value": "233.30", "measurand": "Voltage", "unit": "V", "phase": "L3"},
+                {"value": "0", "measurand": "Power.Active.Import", "unit": "W"},
+                {"value": "0", "measurand": "Energy.Active.Import.Register", "unit": "Wh"},
+            ],
+        }],
+    }
+
+    second_payload = {
+        "connectorId": 1,
+        "transactionId": 42,
+        "meterValue": [{
+            "timestamp": "2026-05-27T13:41:41Z",
+            "sampledValue": first_payload["meterValue"][0]["sampledValue"],
+        }],
+    }
+
+    await bridge._handle_frame(cp, json.dumps([CALL, "msg1", "MeterValues", first_payload]))
+    await bridge._handle_frame(cp, json.dumps([CALL, "msg2", "MeterValues", second_payload]))
+
+    assert published["ocpp/current_a"] == {"charger_id": "CHARGER01", "value": 6.03}
+    assert published["ocpp/voltage_v"] == {"charger_id": "CHARGER01", "value": pytest.approx(238.35333333333332)}
+    assert published["ocpp/power_w"] == {"charger_id": "CHARGER01", "value": pytest.approx(2865.0, rel=0.05)}
+    assert published["ocpp/total_energy_wh"] == {"charger_id": "CHARGER01", "value": pytest.approx(23.875, rel=0.05)}
+    assert published["ocpp/lifetime_energy_kwh"] == {"charger_id": "CHARGER01", "value": pytest.approx(0.023875, rel=0.05)}
+
+
+@pytest.mark.asyncio
 async def test_start_transaction_assigns_transaction_id():
     bridge = make_bridge()
     ws = MagicMock()

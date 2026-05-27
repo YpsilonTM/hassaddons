@@ -61,6 +61,10 @@ If you don't see them in Home Assistant, ensure:
 2. Discovery is enabled (Settings > Devices & Services > MQTT > Configure > Enable discovery)
 3. The charger is connected and `availability` topic shows `online`
 
+When the charger firmware reports `0` for aggregate current, power, or energy,
+the bridge derives usable values from the phase current and phase voltage
+samples so the sensors stay meaningful in Home Assistant.
+
 ## MQTT Topics
 
 All topics are prefixed with the configured `topic_prefix` (default `ocpp`).
