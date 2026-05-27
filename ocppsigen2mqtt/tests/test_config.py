@@ -68,3 +68,36 @@ def test_yaml_load(monkeypatch):
         assert cfg.log_level == "DEBUG"
     finally:
         os.unlink(path)
+
+
+def test_load_reads_dotenv_file(tmp_path, monkeypatch):
+    for key in ["OCPP_HOST", "OCPP_PORT", "MQTT_HOST", "MQTT_PORT",
+                "MQTT_USER", "MQTT_PASS", "MQTT_TOPIC_PREFIX", "CHARGER_ID", "OCPP_USABLE_PHASES", "LOG_LEVEL", "OCPP_AUTHORIZE_ENABLED"]:
+        monkeypatch.delenv(key, raising=False)
+
+    dotenv = tmp_path / ".env"
+    dotenv.write_text(
+        """
+OCPP_HOST=127.0.0.1
+OCPP_PORT=9300
+CHARGER_ID=DOTENV123
+OCPP_USABLE_PHASES=3
+OCPP_AUTHORIZE_ENABLED=false
+MQTT_HOST=broker.local
+MQTT_TOPIC_PREFIX=dev/ocpp
+LOG_LEVEL=DEBUG
+""".strip(),
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+
+    cfg = Config.load()
+
+    assert cfg.ocpp.host == "127.0.0.1"
+    assert cfg.ocpp.port == 9300
+    assert cfg.charger_id == "DOTENV123"
+    assert cfg.usable_phases == 3
+    assert cfg.authorize_enabled is False
+    assert cfg.mqtt.host == "broker.local"
+    assert cfg.mqtt.topic_prefix == "dev/ocpp"
+    assert cfg.log_level == "DEBUG"

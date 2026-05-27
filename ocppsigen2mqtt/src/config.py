@@ -7,6 +7,22 @@ from pathlib import Path
 import yaml
 
 
+def _load_env_file(path: Path) -> None:
+    if not path.exists() or not path.is_file():
+        return
+
+    with path.open("r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = value
+
+
 @dataclass
 class MqttConfig:
     host: str = "core-mosquitto"
@@ -77,6 +93,9 @@ class Config:
 
     @classmethod
     def load(cls, config_file: str | Path | None = None) -> "Config":
+        repo_root = Path(__file__).resolve().parents[1]
+        _load_env_file(Path.cwd() / ".env")
+        _load_env_file(repo_root / ".env")
         if config_file and Path(config_file).exists():
             return cls.from_yaml(config_file)
         return cls.from_env()

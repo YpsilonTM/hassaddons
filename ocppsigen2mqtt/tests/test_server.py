@@ -247,10 +247,11 @@ async def test_set_power_watts_uses_fixed_230v_and_active_phases():
 
     async def fake_send_call(cp_id, action, payload, timeout=20):
         assert cp_id == "TEST01"
-        assert action == "ChangeConfiguration"
-        assert payload["key"] == "MaxCurrentOnVehicleConnector"
-        # floor(3000 / (230 * 2)) = 6
-        assert payload["value"] == "6"
+        assert action == "SetChargingProfile"
+        assert payload["connectorId"] == 0
+        assert payload["csChargingProfiles"]["chargingProfilePurpose"] == "ChargePointMaxProfile"
+        periods = payload["csChargingProfiles"]["chargingSchedule"]["chargingSchedulePeriod"]
+        assert periods[0]["limit"] == 6
         return {"status": "Accepted"}
 
     bridge._send_call = fake_send_call
@@ -273,14 +274,35 @@ async def test_set_power_watts_uses_fixed_230v_and_active_phases():
 
 
 @pytest.mark.asyncio
+async def test_set_power_watts_uses_transaction_id_for_tx_profile():
+    bridge = make_bridge()
+    cp = ChargePoint("TEST01")
+    cp.transaction_id = 12345
+    bridge.charge_points["TEST01"] = cp
+
+    async def fake_send_call(cp_id, action, payload, timeout=20):
+        assert cp_id == "TEST01"
+        assert action == "SetChargingProfile"
+        assert payload["connectorId"] == 1
+        assert payload["csChargingProfiles"]["chargingProfilePurpose"] == "TxProfile"
+        assert payload["csChargingProfiles"]["transactionId"] == 12345
+        return {"status": "Accepted"}
+
+    bridge._send_call = fake_send_call
+    bridge.publish = MagicMock()
+
+    await bridge._cmd_set_power_watts("TEST01", {"watts": 3000})
+
+
+@pytest.mark.asyncio
 async def test_set_power_watts_clamps_to_min_max():
     bridge = make_bridge()
 
     sent_values = []
 
     async def fake_send_call(_cp_id, action, payload, timeout=20):
-        assert action == "ChangeConfiguration"
-        sent_values.append(int(payload["value"]))
+        assert action == "SetChargingProfile"
+        sent_values.append(int(payload["csChargingProfiles"]["chargingSchedule"]["chargingSchedulePeriod"][0]["limit"]))
         return {"status": "Accepted"}
 
     bridge._send_call = fake_send_call
@@ -301,10 +323,25 @@ async def test_set_power_watts_command_can_override_phases():
 
     async def fake_send_call(_cp_id, _action, payload, timeout=20):
         # floor(3000 / (230 * 3)) = 4 -> clamp to 6
-        assert payload["value"] == "6"
+        assert payload["csChargingProfiles"]["chargingSchedule"]["chargingSchedulePeriod"][0]["limit"] == 6
         return {"status": "Accepted"}
 
     bridge._send_call = fake_send_call
     bridge.publish = MagicMock()
 
     await bridge._cmd_set_power_watts("TEST01", {"watts": 3000, "phases": 3})
+
+
+@pytest.mark.asyncio
+async def test_set_power_watts_can_override_connector_for_idle_profile():
+    bridge = make_bridge()
+
+    async def fake_send_call(_cp_id, _action, payload, timeout=20):
+        assert payload["connectorId"] == 2
+        assert payload["csChargingProfiles"]["chargingProfilePurpose"] == "ChargePointMaxProfile"
+        return {"status": "Accepted"}
+
+    bridge._send_call = fake_send_call
+    bridge.publish = MagicMock()
+
+    await bridge._cmd_set_power_watts("TEST01", {"watts": 3000, "connector_id": 2})

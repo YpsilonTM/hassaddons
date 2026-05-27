@@ -5,6 +5,7 @@ import asyncio
 import json
 import logging
 import math
+import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any
@@ -83,6 +84,8 @@ class OcppBridge:
         client.subscribe(f"{prefix}/+/command/get_config")
         client.subscribe(f"{prefix}/+/command/set_config")
         log.info("Subscribed to command topics under %s/command/", prefix)
+        # Publish Home Assistant MQTT discovery payloads
+        self._publish_ha_discovery()
 
     def _on_mqtt_message(self, _client: mqtt.Client, _ud: Any, msg: mqtt.MQTTMessage) -> None:
         if not self.loop:
@@ -135,6 +138,109 @@ class OcppBridge:
             self.publish(topic, enriched, retain=retain)
             return
         self.publish(topic, {"charger_id": self.config.charger_id, "value": payload}, retain=retain)
+
+    def _publish_ha_discovery(self) -> None:
+        """Publish Home Assistant MQTT discovery payloads."""
+        prefix = self.config.mqtt.topic_prefix
+        device = {
+            "identifiers": [f"ocpp_{self.config.charger_id}"],
+            "name": f"EV Charger {self.config.charger_id}",
+            "manufacturer": "OCPP Bridge",
+            "model": "SIGEN EVAC 11",
+        }
+
+        # Numeric sensors with simple state topics
+        sensors = [
+            {
+                "suffix": "power_w",
+                "name": "Power",
+                "device_class": "power",
+                "unit": "W",
+                "icon": "mdi:flash",
+                "value_template": "{{ value_json.value }}",
+            },
+            {
+                "suffix": "current_a",
+                "name": "Current",
+                "device_class": "current",
+                "unit": "A",
+                "icon": "mdi:current-ac",
+                "value_template": "{{ value_json.value }}",
+            },
+            {
+                "suffix": "voltage_v",
+                "name": "Voltage",
+                "device_class": "voltage",
+                "unit": "V",
+                "icon": "mdi:flash-circle",
+                "value_template": "{{ value_json.value }}",
+            },
+            {
+                "suffix": "total_energy_wh",
+                "name": "Total Energy",
+                "device_class": "energy",
+                "unit": "Wh",
+                "icon": "mdi:lightning-bolt",
+                "value_template": "{{ value_json.value }}",
+            },
+        ]
+
+        for sensor in sensors:
+            object_id = f"{self.config.charger_id}_{sensor['suffix']}".lower()
+            state_topic = self._prefix(sensor["suffix"])
+            
+            discovery_payload: dict[str, Any] = {
+                "name": f"{device['name']} {sensor['name']}",
+                "state_topic": state_topic,
+                "unique_id": f"ocpp_{object_id}",
+                "device": device,
+                "availability_topic": self._prefix("availability"),
+                "availability_mode": "topic",
+                "payload_available": "online",
+                "payload_not_available": "offline",
+                "value_template": sensor["value_template"],
+            }
+
+            if sensor["device_class"]:
+                discovery_payload["device_class"] = sensor["device_class"]
+            if sensor["unit"]:
+                discovery_payload["unit_of_measurement"] = sensor["unit"]
+            if sensor.get("icon"):
+                discovery_payload["icon"] = sensor["icon"]
+
+            discovery_topic = f"homeassistant/sensor/{object_id}/config"
+            self.publish(discovery_topic, discovery_payload, retain=True)
+            log.debug("Published Home Assistant discovery for %s", object_id)
+
+        # Binary sensor for availability
+        availability_payload = {
+            "name": f"{device['name']} Available",
+            "state_topic": self._prefix("availability"),
+            "unique_id": f"ocpp_{self.config.charger_id}_availability",
+            "device": device,
+            "device_class": "connectivity",
+            "payload_on": "online",
+            "payload_off": "offline",
+        }
+        self.publish(f"homeassistant/binary_sensor/ocpp_{self.config.charger_id}_availability/config", availability_payload, retain=True)
+        log.debug("Published Home Assistant discovery for availability")
+
+        # Binary sensor for bridge availability
+        bridge_availability_payload = {
+            "name": "OCPP Bridge Available",
+            "state_topic": self._prefix("bridge/availability"),
+            "unique_id": "ocpp_bridge_availability",
+            "device": {
+                "identifiers": ["ocpp_bridge"],
+                "name": "OCPP Bridge",
+                "manufacturer": "OCPP Bridge",
+            },
+            "device_class": "connectivity",
+            "payload_on": "online",
+            "payload_off": "offline",
+        }
+        self.publish("homeassistant/binary_sensor/ocpp_bridge_availability/config", bridge_availability_payload, retain=True)
+        log.debug("Published Home Assistant discovery for bridge availability")
 
     # ---------------------------------------------------------- MQTT commands
 
@@ -204,10 +310,40 @@ class OcppBridge:
         current_per_phase = math.floor(watts / (self.nominal_voltage_v * phases))
         clamped_current = max(6, min(16, current_per_phase))
 
-        key = data.get("key", "MaxCurrentOnVehicleConnector")
-        request = {"key": str(key), "value": str(clamped_current)}
+        cp = self.charge_points.get(cp_id)
+        purpose = data.get("purpose")
+        if not purpose:
+            purpose = "TxProfile" if cp and cp.transaction_id is not None else "ChargePointMaxProfile"
+        if purpose == "ChargePointMaxProfile":
+            connector_id = int(data.get("connector_id", 0))
+        else:
+            connector_id = int(data.get("connector_id", 1))
+
+        charging_profile: dict[str, Any] = {
+            "chargingProfileId": int(time.time()),
+            "stackLevel": 1,
+            "chargingProfilePurpose": purpose,
+            "chargingProfileKind": "Absolute",
+            "chargingSchedule": {
+                "chargingRateUnit": "A",
+                "startSchedule": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+                "chargingSchedulePeriod": [
+                    {"startPeriod": 0, "limit": clamped_current},
+                ],
+            },
+        }
+        if purpose == "TxProfile":
+            if cp and cp.transaction_id is not None:
+                charging_profile["transactionId"] = cp.transaction_id
+            elif data.get("transaction_id") is not None:
+                charging_profile["transactionId"] = int(data["transaction_id"])
+
+        request = {
+            "connectorId": connector_id,
+            "csChargingProfiles": charging_profile,
+        }
         try:
-            result = await self._send_call(cp_id, "ChangeConfiguration", request)
+            result = await self._send_call(cp_id, "SetChargingProfile", request)
             self.publish_event(
                 "command_result/set_power_watts",
                 {
@@ -218,7 +354,23 @@ class OcppBridge:
                     "assumed_voltage_v": self.nominal_voltage_v,
                     "assumed_phases": phases,
                     "estimated_watts": clamped_current * self.nominal_voltage_v * phases,
-                    "config_key": key,
+                    "connector_id": connector_id,
+                    "purpose": request["csChargingProfiles"]["chargingProfilePurpose"],
+                },
+                retain=False,
+            )
+        except TimeoutError:
+            message = (
+                "No CALL_RESULT for SetChargingProfile within timeout; "
+                "charger likely ignores this action on current firmware"
+            )
+            log.error("set_power_watts timeout for %s: %s", cp_id, message)
+            self.publish_event(
+                "command_result/set_power_watts",
+                {
+                    "status": "error",
+                    "message": message,
+                    "request": request,
                 },
                 retain=False,
             )
@@ -226,7 +378,7 @@ class OcppBridge:
             log.exception("set_power_watts failed for %s: %s", cp_id, exc)
             self.publish_event(
                 "command_result/set_power_watts",
-                {"status": "error", "message": str(exc)},
+                {"status": "error", "message": str(exc), "request": request},
                 retain=False,
             )
 
@@ -285,7 +437,7 @@ class OcppBridge:
         cp.websocket = websocket
         self.charge_points[cp_id] = cp
         log.info("Charge point connected: %s", cp_id)
-        self.publish_event("availability", "online")
+        self.publish(self._prefix("availability"), "online", retain=True)
         self.publish_event("bridge/availability", "online")
 
         try:
@@ -296,7 +448,7 @@ class OcppBridge:
             log.info("Connection closed for %s: %s", cp_id, exc)
         finally:
             self.charge_points.pop(cp_id, None)
-            self.publish_event("availability", "offline")
+            self.publish(self._prefix("availability"), "offline", retain=True)
             log.info("Charge point disconnected: %s", cp_id)
 
     async def _handle_frame(self, cp: ChargePoint, raw: str) -> None:
@@ -392,6 +544,13 @@ class OcppBridge:
         await cp.websocket.send(json.dumps([CALL_RESULT, msg_id, response]))
 
     def _publish_meter_values(self, cp: ChargePoint, payload: dict) -> None:
+        txn_id = payload.get("transactionId")
+        if txn_id is not None:
+            try:
+                cp.transaction_id = int(txn_id)
+            except (TypeError, ValueError):
+                pass
+
         metrics: dict[str, Any] = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "transaction_id": payload.get("transactionId"),
@@ -452,7 +611,7 @@ class OcppBridge:
             "Starting OCPP server on %s:%s  (topic prefix: %s)",
             self.config.ocpp.host, self.config.ocpp.port, self.config.mqtt.topic_prefix,
         )
-        self.publish_event("bridge/availability", "online")
+        self.publish(self._prefix("bridge/availability"), "online", retain=True)
         async with ws_serve(
             self.handle_connection,
             self.config.ocpp.host,
