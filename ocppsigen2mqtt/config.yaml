@@ -1,7 +1,7 @@
 name: OCPP SIGEN to MQTT
 slug: ocppsigen2mqtt
 description: OCPP 1.6 central system bridge – accepts charge point connections and exposes start/stop/status via MQTT for Home Assistant
-version: 0.2.0
+version: 0.2.1
 image: ghcr.io/ypsilontm/hassaddons/addon-ocppsigen2mqtt
 url: https://github.com/YpsilonTM/hassaddons
 arch:
@@ -12,6 +12,10 @@ boot: auto
 init: false
 map:
   - data:rw
+ports:
+  9200/tcp: 9200
+ports_description:
+  9200/tcp: OCPP WebSocket server
 options:
   ocpp_host: "0.0.0.0"
   ocpp_port: 9200

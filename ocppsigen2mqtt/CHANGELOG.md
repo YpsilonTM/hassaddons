@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-05-27
+
+### Fixed
+- Declared add-on port mapping for OCPP listener in `config.yaml` with
+  `ports`/`ports_description` (`9200/tcp`). This allows Home Assistant OS
+  to expose the bridge listener to LAN clients and chargers.
+
 ## [0.2.0] - 2026-05-27
 
 ### Added
