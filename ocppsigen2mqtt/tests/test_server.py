@@ -184,6 +184,162 @@ async def test_meter_values_derives_power_voltage_and_energy_from_phase_samples(
     assert published["ocpp/lifetime_energy_kwh"] == {"charger_id": "CHARGER01", "value": pytest.approx(0.023875, rel=0.05)}
 
 
+def test_discovery_includes_status_sensor():
+    bridge = make_bridge()
+    published: dict[str, object] = {}
+
+    def fake_publish(topic, payload, retain=True):
+        published[topic] = payload
+
+    bridge.publish = fake_publish
+
+    bridge._publish_ha_discovery()
+
+    topic = "homeassistant/sensor/charger01_charger_status/config"
+    assert topic in published
+    payload = published[topic]
+    assert payload["state_topic"] == "ocpp/charger_status"
+    assert payload["value_template"] == "{{ value_json.value }}"
+
+
+@pytest.mark.asyncio
+async def test_meter_values_sets_current_zero_when_not_charging_and_power_is_zero():
+    bridge = make_bridge()
+    ws = MagicMock()
+
+    async def fake_send(data):
+        pass
+
+    ws.send = fake_send
+
+    cp = ChargePoint("TEST01")
+    cp.websocket = ws
+    bridge.charge_points["TEST01"] = cp
+
+    published: dict[str, object] = {}
+
+    def fake_publish(topic, payload, retain=True):
+        published[topic] = payload
+
+    bridge.publish = fake_publish
+
+    status_payload = {
+        "connectorId": 1,
+        "status": "Finishing",
+    }
+    await bridge._handle_frame(cp, json.dumps([CALL, "status1", "StatusNotification", status_payload]))
+
+    meter_payload = {
+        "connectorId": 1,
+        "transactionId": 42,
+        "meterValue": [{
+            "timestamp": "2025-01-01T00:00:00Z",
+            "sampledValue": [
+                {"measurand": "Power.Active.Import", "value": "0", "unit": "W"},
+                {"measurand": "Current.Import", "value": "6.0", "unit": "A", "phase": "L1"},
+                {"measurand": "Current.Import", "value": "5.9", "unit": "A", "phase": "L2"},
+                {"measurand": "Current.Import", "value": "0.0", "unit": "A", "phase": "L3"},
+            ],
+        }],
+    }
+
+    await bridge._handle_frame(cp, json.dumps([CALL, "meter1", "MeterValues", meter_payload]))
+
+    assert published["ocpp/current_a"] == {"charger_id": "CHARGER01", "value": 0.0}
+
+
+@pytest.mark.asyncio
+async def test_meter_values_sets_current_zero_for_suspendedev_when_power_is_zero():
+    bridge = make_bridge()
+    ws = MagicMock()
+
+    async def fake_send(data):
+        pass
+
+    ws.send = fake_send
+
+    cp = ChargePoint("TEST01")
+    cp.websocket = ws
+    bridge.charge_points["TEST01"] = cp
+
+    published: dict[str, object] = {}
+
+    def fake_publish(topic, payload, retain=True):
+        published[topic] = payload
+
+    bridge.publish = fake_publish
+
+    status_payload = {
+        "connectorId": 1,
+        "status": "SuspendedEV",
+    }
+    await bridge._handle_frame(cp, json.dumps([CALL, "status2", "StatusNotification", status_payload]))
+
+    meter_payload = {
+        "connectorId": 1,
+        "transactionId": 42,
+        "meterValue": [{
+            "timestamp": "2025-01-01T00:00:00Z",
+            "sampledValue": [
+                {"measurand": "Power.Active.Import", "value": "0", "unit": "W"},
+                {"measurand": "Current.Import", "value": "5.98", "unit": "A", "phase": "L1"},
+                {"measurand": "Current.Import", "value": "5.95", "unit": "A", "phase": "L2"},
+                {"measurand": "Current.Import", "value": "0.0", "unit": "A", "phase": "L3"},
+            ],
+        }],
+    }
+
+    await bridge._handle_frame(cp, json.dumps([CALL, "meter2", "MeterValues", meter_payload]))
+
+    assert published["ocpp/current_a"] == {"charger_id": "CHARGER01", "value": 0.0}
+
+
+@pytest.mark.asyncio
+async def test_meter_values_ignores_implausible_voltage_and_clamps_non_charging_current():
+    bridge = make_bridge()
+    ws = MagicMock()
+
+    async def fake_send(data):
+        pass
+
+    ws.send = fake_send
+
+    cp = ChargePoint("TEST01")
+    cp.websocket = ws
+    bridge.charge_points["TEST01"] = cp
+
+    published: dict[str, object] = {}
+
+    def fake_publish(topic, payload, retain=True):
+        published[topic] = payload
+
+    bridge.publish = fake_publish
+
+    await bridge._handle_frame(cp, json.dumps([CALL, "status3", "StatusNotification", {
+        "connectorId": 1,
+        "status": "Preparing",
+    }]))
+
+    meter_payload = {
+        "connectorId": 1,
+        "transactionId": 42,
+        "meterValue": [{
+            "timestamp": "2025-01-01T00:00:00Z",
+            "sampledValue": [
+                {"measurand": "Power.Active.Import", "value": "0", "unit": "W"},
+                {"measurand": "Current.Import", "value": "6.78", "unit": "A", "phase": "L1"},
+                {"measurand": "Current.Import", "value": "6.76", "unit": "A", "phase": "L2"},
+                {"measurand": "Voltage", "value": "6.78", "unit": "V", "phase": "L1"},
+                {"measurand": "Voltage", "value": "6.76", "unit": "V", "phase": "L2"},
+            ],
+        }],
+    }
+
+    await bridge._handle_frame(cp, json.dumps([CALL, "meter3", "MeterValues", meter_payload]))
+
+    assert published["ocpp/current_a"] == {"charger_id": "CHARGER01", "value": 0.0}
+
+
 @pytest.mark.asyncio
 async def test_start_transaction_assigns_transaction_id():
     bridge = make_bridge()

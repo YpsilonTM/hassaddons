@@ -26,6 +26,11 @@ CALL_ERROR = 4
 
 log = logging.getLogger("ocppsigen2mqtt")
 
+ACTIVE_CHARGING_STATUSES = {"Charging"}
+MIN_VALID_PHASE_VOLTAGE_V = 120.0
+MAX_VALID_PHASE_VOLTAGE_V = 300.0
+NON_CHARGING_CURRENT_CLAMP_MAX_POWER_W = 250.0
+
 
 class ChargePoint:
     """Tracks per-charge-point state and active transaction."""
@@ -34,6 +39,7 @@ class ChargePoint:
         self.cp_id = cp_id
         self.websocket: Any = None
         self.transaction_id: int | None = None
+        self.connector_status: dict[int, str] = {}
         self.connected_at = datetime.now(timezone.utc).isoformat()
 
 
@@ -162,6 +168,14 @@ class OcppBridge:
 
         # Numeric sensors with simple state topics
         sensors = [
+            {
+                "suffix": "charger_status",
+                "name": "Status",
+                "device_class": None,
+                "unit": None,
+                "icon": "mdi:ev-station",
+                "value_template": "{{ value_json.value }}",
+            },
             {
                 "suffix": "power_w",
                 "name": "Power",
@@ -564,7 +578,13 @@ class OcppBridge:
         elif action == "StatusNotification":
             status = payload.get("status", "Unknown")
             connector = payload.get("connectorId", 0)
+            try:
+                connector_id = int(connector)
+            except (TypeError, ValueError):
+                connector_id = 0
+            cp.connector_status[connector_id] = status
             self.publish_event(f"connector/{connector}/status", status)
+            self.publish_event("charger_status", {"value": status, "connector_id": connector_id})
             self.publish_event("status", payload)
 
         elif action == "StartTransaction":
@@ -614,8 +634,17 @@ class OcppBridge:
             except (TypeError, ValueError):
                 pass
 
+        connector_raw = payload.get("connectorId", 0)
+        try:
+            connector_id = int(connector_raw)
+        except (TypeError, ValueError):
+            connector_id = 0
+        status = cp.connector_status.get(connector_id) or cp.connector_status.get(0) or "Unknown"
+
         metrics: dict[str, Any] = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
+            "connector_id": connector_id,
+            "status": status,
             "transaction_id": payload.get("transactionId"),
         }
         total_current_a: float | None = None
@@ -660,11 +689,14 @@ class OcppBridge:
 
                 elif measurand == "Voltage":
                     phase = sv.get("phase")
+                    is_plausible_phase_voltage = MIN_VALID_PHASE_VOLTAGE_V <= value <= MAX_VALID_PHASE_VOLTAGE_V
                     if phase in {"L1", "L2", "L3"}:
-                        phase_voltages[phase] = value
+                        if is_plausible_phase_voltage:
+                            phase_voltages[phase] = value
                     else:
-                        metrics["voltage_v"] = value
-                        self.publish_event("voltage_v", {"value": value})
+                        if is_plausible_phase_voltage:
+                            metrics["voltage_v"] = value
+                            self.publish_event("voltage_v", {"value": value})
 
         active_phases = sum(1 for val in phase_currents.values() if val > 0.1)
         if active_phases > 0:
@@ -677,10 +709,6 @@ class OcppBridge:
             current_a = max(phase_currents.values())
         else:
             current_a = None
-
-        if current_a is not None:
-            metrics["current_a"] = current_a
-            self.publish_event("current_a", {"value": current_a})
 
         derived_voltage_v: float | None = None
         if phase_voltages:
@@ -701,6 +729,17 @@ class OcppBridge:
         if derived_power_w is not None:
             metrics["power_w"] = derived_power_w
             self.publish_event("power_w", {"value": derived_power_w})
+
+        if current_a is not None:
+            # Some chargers keep reporting ~6A while idle/finished; clamp to 0A when not charging.
+            if (
+                status != "Unknown"
+                and status not in ACTIVE_CHARGING_STATUSES
+                and (derived_power_w is None or derived_power_w <= NON_CHARGING_CURRENT_CLAMP_MAX_POWER_W)
+            ):
+                current_a = 0.0
+            metrics["current_a"] = current_a
+            self.publish_event("current_a", {"value": current_a})
 
         if reported_energy_wh is not None:
             self._derived_energy_wh = max(self._derived_energy_wh, reported_energy_wh)

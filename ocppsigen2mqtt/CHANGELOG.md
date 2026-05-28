@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Added a Home Assistant-discovered `charger_status` sensor published from
+  OCPP `StatusNotification`, so charger state is visible as a regular sensor.
+
+### Fixed
+- Prevented stale current display after charging finishes by clamping
+  published `current_a` to `0.0` when charger status is non-charging and
+  imported power is effectively zero.
+- Tuned charging-state detection for SIGEN behavior: only `Charging` is
+  treated as active for current display, so `SuspendedEV` + zero power now
+  publishes `0.0 A`.
+- Added voltage plausibility filtering (120-300V) for phase-based derivation,
+  so invalid low-voltage samples do not create misleading derived power and
+  stale current readings.
+
 ## [0.3.1] - 2026-05-27
 
 ### Fixed
