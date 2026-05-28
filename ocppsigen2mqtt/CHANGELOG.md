@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-28
+
 ### Added
 - Added a Home Assistant-discovered `charger_status` sensor published from
   OCPP `StatusNotification`, so charger state is visible as a regular sensor.
@@ -20,6 +22,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Added voltage plausibility filtering (120-300V) for phase-based derivation,
   so invalid low-voltage samples do not create misleading derived power and
   stale current readings.
+
+### Added
+- Added a retained Home Assistant switch for app charging access so the
+  authorize gate is visible and controllable in the mobile app.
 
 ## [0.3.1] - 2026-05-27
 

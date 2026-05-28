@@ -282,6 +282,27 @@ class OcppBridge:
             self.publish(f"homeassistant/button/{object_id}/config", button_payload, retain=True)
             log.debug("Published Home Assistant discovery for %s", object_id)
 
+        authorize_switch_payload = {
+            "name": f"{device['name']} App Access",
+            "state_topic": self._prefix("authorize/state"),
+            "unique_id": f"ocpp_{self.config.charger_id}_authorize_switch".lower(),
+            "device": device,
+            "command_topic": self._prefix("command/toggle_authorize"),
+            "payload_on": json.dumps({"enabled": True}),
+            "payload_off": json.dumps({"enabled": False}),
+            "state_on": "true",
+            "state_off": "false",
+            "value_template": "{{ value_json.enabled | lower }}",
+            "icon": "mdi:phone",
+        }
+        object_id = f"ocpp_{self.config.charger_id}_authorize_switch".lower()
+        self.publish(
+            f"homeassistant/switch/{object_id}/config",
+            authorize_switch_payload,
+            retain=True,
+        )
+        log.debug("Published Home Assistant discovery for authorize switch")
+
         # Binary sensor for availability
         availability_payload = {
             "name": f"{device['name']} Available",
@@ -462,7 +483,7 @@ class OcppBridge:
             # Set to explicit value
             self.authorize_enabled = bool(enabled)
         log.info("Authorization gate is now %s", "enabled" if self.authorize_enabled else "disabled")
-        self.publish_event("authorize/state", {"enabled": self.authorize_enabled}, retain=False)
+        self.publish_event("authorize/state", {"enabled": self.authorize_enabled}, retain=True)
 
     async def _call_and_publish(self, cp_id: str, action: str, payload: dict, result_topic: str) -> None:
         try:
@@ -771,6 +792,7 @@ class OcppBridge:
             self.config.ocpp.host, self.config.ocpp.port, self.config.mqtt.topic_prefix,
         )
         self.publish(self._prefix("bridge/availability"), "online", retain=True)
+        self.publish_event("authorize/state", {"enabled": self.authorize_enabled}, retain=True)
         async with ws_serve(
             self.handle_connection,
             self.config.ocpp.host,

@@ -202,6 +202,26 @@ def test_discovery_includes_status_sensor():
     assert payload["value_template"] == "{{ value_json.value }}"
 
 
+def test_discovery_includes_authorize_switch():
+    bridge = make_bridge()
+    published: dict[str, object] = {}
+
+    def fake_publish(topic, payload, retain=True):
+        published[topic] = payload
+
+    bridge.publish = fake_publish
+
+    bridge._publish_ha_discovery()
+
+    topic = "homeassistant/switch/ocpp_charger01_authorize_switch/config"
+    assert topic in published
+    payload = published[topic]
+    assert payload["state_topic"] == "ocpp/authorize/state"
+    assert payload["command_topic"] == "ocpp/command/toggle_authorize"
+    assert payload["payload_on"] == '{"enabled": true}'
+    assert payload["payload_off"] == '{"enabled": false}'
+
+
 @pytest.mark.asyncio
 async def test_meter_values_sets_current_zero_when_not_charging_and_power_is_zero():
     bridge = make_bridge()
@@ -463,15 +483,18 @@ async def test_toggle_authorize_toggles_state():
     initial_state = bridge.authorize_enabled
 
     published = {}
-    def fake_publish(topic, payload, retain=True):
-        published[topic] = payload
-    bridge.publish = fake_publish
+
+    def fake_publish_event(topic_suffix, payload, retain=True):
+        published[topic_suffix] = {"payload": payload, "retain": retain}
+
+    bridge.publish_event = fake_publish_event
 
     await bridge._cmd_toggle_authorize("TEST01", {})
 
     assert bridge.authorize_enabled == (not initial_state)
-    assert "ocpp/authorize/state" in published
-    assert published["ocpp/authorize/state"]["enabled"] == (not initial_state)
+    assert "authorize/state" in published
+    assert published["authorize/state"]["payload"]["enabled"] == (not initial_state)
+    assert published["authorize/state"]["retain"] is True
 
 
 @pytest.mark.asyncio

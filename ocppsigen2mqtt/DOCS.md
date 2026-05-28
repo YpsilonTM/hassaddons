@@ -52,6 +52,9 @@ Home Assistant will auto-discover these entities:
   - Stop Charging
   - Reset Charger
 
+- **Switches:**
+  - App Access (enable/disable charger app charging access)
+
 All sensors are grouped under a device named `EV Charger {charger_id}` and appear in
 the **Integrations > MQTT > Discovered** list. They'll be created automatically without
 additional configuration.
@@ -104,6 +107,9 @@ All topics are prefixed with the configured `topic_prefix` (default `ocpp`).
 | `{prefix}/command/set_config` | `{"key": "HeartbeatInterval", "value": "60"}` | Write config key |
 | `{prefix}/command/set_power_watts` | `{"watts": 3000}` | ⚠ **Not supported** – see smart charging note below |
 | `{prefix}/command/toggle_authorize` | `{"enabled": true}` | Enable/disable app charging access |
+
+The `authorize/state` topic is retained so the App Access switch is available
+immediately after Home Assistant restarts.
 
 ## OCPP connection setup
 
