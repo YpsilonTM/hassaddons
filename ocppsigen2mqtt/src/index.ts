@@ -42,6 +42,7 @@ async function main() {
                 value_template: "{{ value_json.current }}",
                 unit_of_measurement: "A",
                 device_class: "current",
+                state_class: "measurement",
                 unique_id: `${CHARGER_ID}_current`,
                 device: deviceConfig
             }
@@ -54,6 +55,7 @@ async function main() {
                 value_template: "{{ value_json.power }}",
                 unit_of_measurement: "W",
                 device_class: "power",
+                state_class: "measurement",
                 unique_id: `${CHARGER_ID}_power`,
                 device: deviceConfig
             }
