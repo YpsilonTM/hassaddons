@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCPP Server Control</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        div { margin-bottom: 10px; }
+        label { display: inline-block; width: 120px; }
+        input[type="text"], input[type="number"] { padding: 5px; margin: 2px; width: 150px; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+        #status { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>OCPP Server Control</h1>
+
+    <div>
+        <label for="controlChargePointId">Charge Point ID (Optional):</label>
+        <input type="text" id="controlChargePointId" placeholder="Auto-detected from config">
+    </div>
+
+    <h2>Start Transaction</h2>
+    <div>
+        <label for="connectorId">Connector ID (Optional):</label>
+        <input type="number" id="connectorId" placeholder="1">
+    </div>
+    <div>
+        <label for="idTag">ID Tag (Optional):</label>
+        <input type="text" id="idTag" placeholder="Auto-detected from config">
+    </div>
+    <button id="startButton">Remote Start Transaction</button>
+
+    <h2>Stop Transaction</h2>
+    <button id="stopButton">Remote Stop Transaction</button>
+
+    <h2>Set Charge Current Limit</h2>
+    <div>
+        <label for="amperes">Amperes (6-16):</label>
+        <input type="number" id="amperes" value="16" min="6" max="16">
+    </div>
+    <button id="limitButton">Set Current Limit</button>
+
+    <h2>Configuration</h2>
+    <button id="configButton">Get SupportedFeatureProfiles</button>
+
+    <h2>Status:</h2>
+    <pre id="status"></pre>
+
+    <script>
+        const controlChargePointId = document.getElementById('controlChargePointId');
+        const connectorIdInput = document.getElementById('connectorId');
+        const idTagInput = document.getElementById('idTag');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const amperesInput = document.getElementById('amperes');
+        const limitButton = document.getElementById('limitButton');
+        const configButton = document.getElementById('configButton');
+        const statusElement = document.getElementById('status');
+
+        function logStatus(message) {
+            statusElement.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            statusElement.scrollTop = statusElement.scrollHeight;
+        }
+
+        startButton.addEventListener('click', async () => {
+            const chargePointId = controlChargePointId.value || undefined;
+            const connectorIdValue = connectorIdInput.value;
+            const connectorId = connectorIdValue ? parseInt(connectorIdValue, 10) : undefined;
+            const idTag = idTagInput.value || undefined;
+
+            logStatus(`Attempting to send RemoteStartTransaction...`);
+            try {
+                const response = await fetch('/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ chargePointId, connectorId, idTag }),
+                });
+                const data = await response.text();
+                logStatus('RemoteStartTransaction Response: ' + data);
+            } catch (error) {
+                logStatus('Error sending RemoteStartTransaction: ' + error);
+            }
+        });
+
+        stopButton.addEventListener('click', async () => {
+            const chargePointId = controlChargePointId.value || undefined;
+
+            logStatus(`Attempting to send RemoteStopTransaction...`);
+            try {
+                const response = await fetch('/stop', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ chargePointId }),
+                });
+                const data = await response.text();
+                logStatus('RemoteStopTransaction Response: ' + data);
+            } catch (error) {
+                logStatus('Error sending RemoteStopTransaction: ' + error);
+            }
+        });
+
+        limitButton.addEventListener('click', async () => {
+            const chargePointId = controlChargePointId.value || undefined;
+            const connectorIdValue = connectorIdInput.value;
+            const connectorId = connectorIdValue ? parseInt(connectorIdValue, 10) : undefined;
+            const amperes = parseInt(amperesInput.value, 10);
+
+            logStatus(`Attempting to set current limit to ${amperes}A...`);
+            try {
+                const response = await fetch('/limit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ chargePointId, connectorId, amperes }),
+                });
+                const data = await response.text();
+                logStatus('Set Current Limit Response: ' + data);
+            } catch (error) {
+                logStatus('Error setting current limit: ' + error);
+            }
+        });
+
+        configButton.addEventListener('click', async () => {
+            const chargePointId = controlChargePointId.value || undefined;
+
+            logStatus(`Attempting to GetConfiguration for SupportedFeatureProfiles...`);
+            try {
+                const response = await fetch('/getconfig', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ chargePointId, keys: ["SupportedFeatureProfiles"] }),
+                });
+                const data = await response.text();
+                logStatus('GetConfiguration Response: ' + data);
+            } catch (error) {
+                logStatus('Error sending GetConfiguration: ' + error);
+            }
+        });
+    </script>
+</body>
+</html>

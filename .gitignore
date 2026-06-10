@@ -16,3 +16,9 @@ htmlcov/
 .DS_Store
 Thumbs.db
 extra/
+# Extra
+/datasheets/
+# Bun
+node_modules/
+# Environment variables
+.env

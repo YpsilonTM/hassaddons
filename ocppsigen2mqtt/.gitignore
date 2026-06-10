@@ -1,6 +1,0 @@
-.env
-._bridge.err
-._bridge.log
-_run_err.log
-_run_out.log
-.pytest_cache/

@@ -16,6 +16,7 @@ env_map = {
     'OCPP_HOST': options.get('ocpp_host', '0.0.0.0'),
     'OCPP_PORT': options.get('ocpp_port', 9200),
     'CHARGER_ID': options.get('charger_id', '120A64150210'),
+    'OCPP_RFID_TAG': options.get('rfid_tag', 'HomeAssistant'),
     'OCPP_USABLE_PHASES': options.get('usable_phases', 2),
     'OCPP_AUTHORIZE_ENABLED': options.get('authorize_enabled', True),
     'MQTT_HOST': options.get('mqtt_host', 'core-mosquitto'),
@@ -33,4 +34,5 @@ PY
     })"
 fi
 
-exec python3 /app/src/server.py
+# Run the typescript app using bun
+exec bun run src/index.ts

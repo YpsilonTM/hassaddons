@@ -1,22 +1,22 @@
-FROM ghcr.io/home-assistant/base:3.23
+FROM oven/bun:1.0 AS builder
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+WORKDIR /app
+COPY package.json bun.lock ./
+RUN bun install
+
+COPY . .
+
+# Use a clean base image
+FROM ghcr.io/home-assistant/base:3.23
 
 WORKDIR /app
 
-RUN apk add --no-cache python3 py3-pip \
-    && python3 -m venv /opt/venv
+# Install curl/unzip to install bun on the alpine base
+RUN apk add --no-cache curl unzip python3
+RUN curl -fsSL https://bun.sh/install | bash \
+    && ln -s ~/.bun/bin/bun /usr/local/bin/bun
 
-ENV PATH="/opt/venv/bin:${PATH}"
-
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir \
-    "websockets>=12.0" \
-    "paho-mqtt>=2.1" \
-    "PyYAML>=6.0"
-
-COPY src /app/src
+COPY --from=builder /app /app
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
 

@@ -1,0 +1,291 @@
+[OCPP] Message sent to 120A64150210: [2,"a5f64a57-2bb4-42cf-8937-2ce23b4ee24d","RemoteStartTransaction",{"connectorId":1,"idTag":"92000056972"}]
+[OCPP] CALLRESULT from 120A64150210 - UniqueId: a5f64a57-2bb4-42cf-8937-2ce23b4ee24d, Payload: {
+  status: "Accepted",
+}
+[OCPP] CALL from 120A64150210 - UniqueId: 40, Action: Authorize, Payload: {
+  idTag: "92000056972",
+}
+[OCPP] Message sent to 120A64150210: [3,"40",{"idTagInfo":{"status":"Accepted","expiryDate":"2026-06-11T13:11:41.511Z"}}]
+[OCPP] Sent Authorize.conf to 120A64150210
+[OCPP] CALL from 120A64150210 - UniqueId: 41, Action: StartTransaction, Payload: {
+  connectorId: 1,
+  idTag: "92000056972",
+  meterStart: 194930,
+  timestamp: "2026-06-10T13:11:41Z",
+}
+[OCPP] Message sent to 120A64150210: [3,"41",{"idTagInfo":{"status":"Accepted"},"transactionId":39085}]
+[OCPP] Sent StartTransaction.conf to 120A64150210
+[OCPP] CALL from 120A64150210 - UniqueId: 42, Action: StatusNotification, Payload: {
+  connectorId: 1,
+  errorCode: "NoError",
+  status: "Charging",
+  vendorErrorCode: "",
+}
+[OCPP] Status of 120A64150210 changed to: Charging (Connector 1)
+[OCPP] Message sent to 120A64150210: [3,"42",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 43, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:12:20Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:12:20Z","sampledValue":[{"value":"1.00","measurand":"Current.Import","unit":"A"},{"value":"1.00","measurand":"Current.Offered","unit":"A"},{"value":"194930","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"90","measurand":"Power.Active.Import","unit":"W"},{"value":"247.97","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"43",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 44, Action: Heartbeat, Payload: {}
+[OCPP] Message sent to 120A64150210: [3,"44",{"currentTime":"2026-06-10T13:12:28.811Z"}]
+[OCPP] Sent Heartbeat.conf to 120A64150210
+[OCPP] CALL from 120A64150210 - UniqueId: 45, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:12:50Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:12:50Z","sampledValue":[{"value":"9.93","measurand":"Current.Import","unit":"A"},{"value":"9.93","measurand":"Current.Offered","unit":"A"},{"value":"194950","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"2408","measurand":"Power.Active.Import","unit":"W"},{"value":"246.09","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"45",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 46, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:13:20Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:13:20Z","sampledValue":[{"value":"7.13","measurand":"Current.Import","unit":"A"},{"value":"7.13","measurand":"Current.Offered","unit":"A"},{"value":"194970","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"1695","measurand":"Power.Active.Import","unit":"W"},{"value":"242.45","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"46",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 47, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:13:50Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:13:50Z","sampledValue":[{"value":"7.67","measurand":"Current.Import","unit":"A"},{"value":"7.67","measurand":"Current.Offered","unit":"A"},{"value":"194980","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"1827","measurand":"Power.Active.Import","unit":"W"},{"value":"242.85","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"47",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 48, Action: Heartbeat, Payload: {}
+[OCPP] Message sent to 120A64150210: [3,"48",{"currentTime":"2026-06-10T13:13:58.915Z"}]
+[OCPP] Sent Heartbeat.conf to 120A64150210
+Webserver received /stop request for ChargePointId: 120A64150210
+[OCPP] Message sent to 120A64150210: [2,"740adea3-c399-480c-be7e-73619640a2ed","RemoteStopTransaction",{"transactionId":12345}]
+[OCPP] CALLRESULT from 120A64150210 - UniqueId: 740adea3-c399-480c-be7e-73619640a2ed, Payload: {
+  status: "Rejected",
+}
+[OCPP] CALL from 120A64150210 - UniqueId: 49, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:14:20Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:14:20Z","sampledValue":[{"value":"5.86","measurand":"Current.Import","unit":"A"},{"value":"5.86","measurand":"Current.Offered","unit":"A"},{"value":"194990","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"1369","measurand":"Power.Active.Import","unit":"W"},{"value":"238.57","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"49",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 50, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:14:50Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:14:50Z","sampledValue":[{"value":"5.93","measurand":"Current.Import","unit":"A"},{"value":"5.93","measurand":"Current.Offered","unit":"A"},{"value":"195010","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"1382","measurand":"Power.Active.Import","unit":"W"},{"value":"237.84","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"50",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 51, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:15:00Z",
+      sampledValue: [
+        [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:15:00Z","sampledValue":[{"value":"5.90","measurand":"Current.Import","unit":"A"}]}]
+[OCPP] Message sent to 120A64150210: [3,"51",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 52, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:15:20Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:15:20Z","sampledValue":[{"value":"6.57","measurand":"Current.Import","unit":"A"},{"value":"6.57","measurand":"Current.Offered","unit":"A"},{"value":"195020","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"1538","measurand":"Power.Active.Import","unit":"W"},{"value":"238.69","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"52",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 53, Action: Heartbeat, Payload: {}
+[OCPP] Message sent to 120A64150210: [3,"53",{"currentTime":"2026-06-10T13:15:28.916Z"}]
+[OCPP] Sent Heartbeat.conf to 120A64150210
+[OCPP] CALL from 120A64150210 - UniqueId: 54, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:15:51Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:15:51Z","sampledValue":[{"value":"9.40","measurand":"Current.Import","unit":"A"},{"value":"9.40","measurand":"Current.Offered","unit":"A"},{"value":"195030","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"2271","measurand":"Power.Active.Import","unit":"W"},{"value":"245.38","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"54",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 55, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:16:21Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:16:21Z","sampledValue":[{"value":"5.96","measurand":"Current.Import","unit":"A"},{"value":"5.96","measurand":"Current.Offered","unit":"A"},{"value":"195050","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"1412","measurand":"Power.Active.Import","unit":"W"},{"value":"242.10","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"55",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 56, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:16:51Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:16:51Z","sampledValue":[{"value":"5.99","measurand":"Current.Import","unit":"A"},{"value":"5.99","measurand":"Current.Offered","unit":"A"},{"value":"195060","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"1393","measurand":"Power.Active.Import","unit":"W"},{"value":"237.16","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"56",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 57, Action: Heartbeat, Payload: {}
+[OCPP] Message sent to 120A64150210: [3,"57",{"currentTime":"2026-06-10T13:16:59.031Z"}]
+[OCPP] Sent Heartbeat.conf to 120A64150210
+[OCPP] CALL from 120A64150210 - UniqueId: 58, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:17:21Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:17:21Z","sampledValue":[{"value":"8.44","measurand":"Current.Import","unit":"A"},{"value":"8.44","measurand":"Current.Offered","unit":"A"},{"value":"195070","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"1995","measurand":"Power.Active.Import","unit":"W"},{"value":"240.31","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"58",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 59, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:17:51Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:17:51Z","sampledValue":[{"value":"5.83","measurand":"Current.Import","unit":"A"},{"value":"5.83","measurand":"Current.Offered","unit":"A"},{"value":"195090","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"1335","measurand":"Power.Active.Import","unit":"W"},{"value":"233.25","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"59",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 60, Action: MeterValues, Payload: {
+  connectorId: 1,
+  transactionId: 39085,
+  meterValue: [
+    {
+      timestamp: "2026-06-10T13:18:21Z",
+      sampledValue: [
+        [Object ...], [Object ...], [Object ...], [Object ...], [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Meter readings from 120A64150210: [{"timestamp":"2026-06-10T13:18:21Z","sampledValue":[{"value":"5.96","measurand":"Current.Import","unit":"A"},{"value":"5.96","measurand":"Current.Offered","unit":"A"},{"value":"195100","measurand":"Energy.Active.Import.Register","unit":"Wh"},{"value":"1373","measurand":"Power.Active.Import","unit":"W"},{"value":"234.67","measurand":"Voltage","unit":"V"}]}]
+[OCPP] Message sent to 120A64150210: [3,"60",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 61, Action: StatusNotification, Payload: {
+  connectorId: 1,
+  errorCode: "NoError",
+  status: "SuspendedEVSE",
+  vendorErrorCode: "",
+}
+[OCPP] Status of 120A64150210 changed to: SuspendedEVSE (Connector 1)
+[OCPP] Message sent to 120A64150210: [3,"61",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 62, Action: StatusNotification, Payload: {
+  connectorId: 1,
+  errorCode: "NoError",
+  status: "Preparing",
+  vendorErrorCode: "",
+}
+[OCPP] Status of 120A64150210 changed to: Preparing (Connector 1)
+[OCPP] Message sent to 120A64150210: [3,"62",{}]
+[OCPP] CALL from 120A64150210 - UniqueId: 63, Action: Heartbeat, Payload: {}
+[OCPP] Message sent to 120A64150210: [3,"63",{"currentTime":"2026-06-10T13:18:29.114Z"}]
+[OCPP] Sent Heartbeat.conf to 120A64150210
+[OCPP] CALL from 120A64150210 - UniqueId: 64, Action: Heartbeat, Payload: {}
+[OCPP] Message sent to 120A64150210: [3,"64",{"currentTime":"2026-06-10T13:19:59.214Z"}]
+[OCPP] Sent Heartbeat.conf to 120A64150210
+[OCPP] CALL from 120A64150210 - UniqueId: 65, Action: Heartbeat, Payload: {}
+[OCPP] Message sent to 120A64150210: [3,"65",{"currentTime":"2026-06-10T13:21:29.315Z"}]
+[OCPP] Sent Heartbeat.conf to 120A64150210
+[OCPP] CALL from 120A64150210 - UniqueId: 66, Action: Heartbeat, Payload: {}
+[OCPP] Message sent to 120A64150210: [3,"66",{"currentTime":"2026-06-10T13:22:59.415Z"}]
+[OCPP] Sent Heartbeat.conf to 120A64150210
+Webserver received /stop request for ChargePointId: 120A64150210
+[OCPP] Message sent to 120A64150210: [2,"7430ae5a-2c29-465e-8c5c-332c391f4d03","RemoteStopTransaction",{"transactionId":39085}]
+[OCPP] CALLRESULT from 120A64150210 - UniqueId: 7430ae5a-2c29-465e-8c5c-332c391f4d03, Payload: {
+  status: "Accepted",
+}
+[OCPP] CALL from 120A64150210 - UniqueId: 67, Action: StopTransaction, Payload: {
+  meterStop: 195100,
+  timestamp: "2026-06-10T13:24:07Z",
+  transactionId: 39085,
+  idTag: "92000056972",
+  reason: "Remote",
+  transactionData: [
+    {
+      timestamp: "2026-06-10T13:24:07Z",
+      sampledValue: [
+        [Object ...]
+      ],
+    }
+  ],
+}
+[OCPP] Message sent to 120A64150210: [3,"67",{"idTagInfo":{"status":"Accepted"}}]
+[OCPP] Sent StopTransaction.conf to 120A64150210
+[OCPP] CALL from 120A64150210 - UniqueId: 68, Action: Heartbeat, Payload: {}
+[OCPP] Message sent to 120A64150210: [3,"68",{"currentTime":"2026-06-10T13:24:29.516Z"}]
+[OCPP] Sent Heartbeat.conf to 120A64150210
